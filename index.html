@@ -210,18 +210,47 @@
     return new Date(table[year]);
   }
 
-  function updateCountdowns() {
+function nextDateFuture(month, day) {
     let now = new Date();
-    document.getElementById("newyear").innerText = formatCountdown(getSpringFestival()-now);
-    document.getElementById("baby").innerText = formatCountdown(nextDate(1,18)-now);
-    document.getElementById("me").innerText = formatCountdown(nextDate(7,30)-now);
-    document.getElementById("laowang").innerText = formatCountdown(nextDate(6,1)-now);
-    document.getElementById("guoqing").innerText = formatCountdown(nextDate(10,1)-now);
-    document.getElementById("labour").innerText = formatCountdown(nextDate(5,1)-now);
-    document.getElementById("yuandan").innerText = formatCountdown(nextDate(1,1)-now);
-    document.getElementById("weekend").innerText = formatCountdown(nextWeekend()-now);
-    document.getElementById("salary").innerText = formatCountdown(nextSalary()-now);
-  }
+    let year = now.getFullYear();
+    let date = new Date(year, month-1, day);
+    if (date <= now) date = new Date(year+1, month-1, day);
+    return date;
+}
+  
+// 倒计时更新函数
+function updateCountdowns() {
+    let now = new Date();
+
+    document.getElementById("newyear").innerText = formatCountdown(getNextSpringFestival() - now);
+    document.getElementById("baby").innerText = formatCountdown(nextDateFuture(1,18) - now);
+    document.getElementById("me").innerText = formatCountdown(nextDateFuture(7,30) - now);
+    document.getElementById("laowang").innerText = formatCountdown(nextDateFuture(6,1) - now);
+    document.getElementById("guoqing").innerText = formatCountdown(nextDateFuture(10,1) - now);
+    document.getElementById("labour").innerText = formatCountdown(nextDateFuture(5,1) - now);
+    document.getElementById("yuandan").innerText = formatCountdown(nextDateFuture(1,1) - now);
+    document.getElementById("weekend").innerText = formatCountdown(nextWeekend() - now);
+    document.getElementById("salary").innerText = formatCountdown(nextSalary() - now);
+}
+
+
+// 春节（使用春节表，确保未来日期）
+function getNextSpringFestival() {
+    const table = {
+        2025:"2025-01-29",
+        2026:"2026-02-17",
+        2027:"2027-02-06",
+        2028:"2028-01-26",
+        2029:"2029-02-13"
+    };
+    let now = new Date();
+    let year = now.getFullYear();
+    let date = new Date(table[year]);
+    if(date <= now){
+        date = new Date(table[year+1]);
+    }
+    return date;
+}
 
   setInterval(updateCountdowns, 1000);
   updateCountdowns();
