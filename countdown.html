@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>快乐倒计时</title>
+<style>
+    body {
+        background: #f6f8fa;
+        font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+        text-align: center;
+    }
+    h1 {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .clock {
+        margin: 20px auto;
+        font-size: 60px;
+        color: #111;
+        display: inline-block;
+        font-weight: bold;
+        letter-spacing: 3px;
+    }
+
+    .flip {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #000;
+        color: #0f0;
+        border-radius: 10px;
+        font-family: monospace;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .item {
+        background: white;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+        font-size: 30px;
+    }
+
+    .title {
+        font-size: 34px;
+        color: #0077cc;
+        margin-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>🎉 快乐倒计时 · 每天都更接近幸福！</h1>
+
+<div class="clock">
+    <span id="clock" class="flip">00:00:00</span>
+</div>
+
+<div class="container">
+
+    <div class="item"><div class="title">今年春节还有</div><span id="newyear"></span></div>
+    <div class="item"><div class="title">宝宝生日（1月18日）还有</div><span id="baby"></span></div>
+    <div class="item"><div class="title">自己的生日（7月30日）还有</div><span id="me"></span></div>
+    <div class="item"><div class="title">老王生日（6月1日）还有</div><span id="laowang"></span></div>
+    <div class="item"><div class="title">国庆节（10月1日）还有</div><span id="guoqing"></span></div>
+    <div class="item"><div class="title">劳动节（5月1日）还有</div><span id="labour"></span></div>
+    <div class="item"><div class="title">元旦（1月1日）还有</div><span id="yuandan"></span></div>
+    <div class="item"><div class="title">最近的周六还有</div><span id="weekend"></span></div>
+    <div class="item"><div class="title">下一个发工资日（每月5号）还有</div><span id="salary"></span></div>
+
+</div>
+
+<script>
+    function formatCountdown(ms) {
+        let d = Math.floor(ms / (1000 * 60 * 60 * 24));
+        let h = Math.floor(ms / (1000 * 60 * 60)) % 24;
+        let m = Math.floor(ms / (1000 * 60)) % 60;
+        let s = Math.floor(ms / 1000) % 60;
+        return `${d}天 ${h}小时 ${m}分 ${s}秒`;
+    }
+
+    function nextDate(month, day) {
+        let now = new Date();
+        let year = now.getFullYear();
+        let date = new Date(year, month - 1, day);
+
+        if (date < now) date = new Date(year + 1, month - 1, day);
+        return date;
+    }
+
+    function nextWeekend() {
+        let now = new Date();
+        let day = now.getDay(); 
+        let diff = (6 - day + 7) % 7; 
+        if (diff === 0) diff = 7;      
+        let target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+        return target;
+    }
+
+    function nextSalary() {
+        let now = new Date();
+        let day = 5;
+
+        let target = new Date(now.getFullYear(), now.getMonth(), day);
+        if (target < now) {
+            target = new Date(now.getFullYear(), now.getMonth() + 1, day);
+        }
+        return target;
+    }
+
+    function getSpringFestival() {
+        // 未来10年的春节日期，可扩展
+        const table = {
+            2025: "2025-01-29",
+            2026: "2026-02-17",
+            2027: "2027-02-06",
+            2028: "2028-01-26",
+            2029: "2029-02-13",
+            2030: "2030-02-03"
+        };
+        let year = new Date().getFullYear();
+        return new Date(table[year]);
+    }
+
+    function update() {
+        let now = new Date();
+
+        document.getElementById("clock").innerText =
+            now.toLocaleTimeString("zh-CN", { hour12: false });
+
+        document.getElementById("newyear").innerText =
+            formatCountdown(getSpringFestival() - now);
+        document.getElementById("baby").innerText =
+            formatCountdown(nextDate(1,18) - now);
+        document.getElementById("me").innerText =
+            formatCountdown(nextDate(7,30) - now);
+        document.getElementById("laowang").innerText =
+            formatCountdown(nextDate(6,1) - now);
+        document.getElementById("guoqing").innerText =
+            formatCountdown(nextDate(10,1) - now);
+        document.getElementById("labour").innerText =
+            formatCountdown(nextDate(5,1) - now);
+        document.getElementById("yuandan").innerText =
+            formatCountdown(nextDate(1,1) - now);
+        document.getElementById("weekend").innerText =
+            formatCountdown(nextWeekend() - now);
+        document.getElementById("salary").innerText =
+            formatCountdown(nextSalary() - now);
+    }
+
+    update();
+    setInterval(update, 1000);
+</script>
+</body>
+</html>
