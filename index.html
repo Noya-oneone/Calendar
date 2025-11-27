@@ -134,13 +134,14 @@
 <div class="container">
   <div class="card"><div class="card-title">最近周末</div><div class="card-countdown" id="weekend"></div></div>
   <div class="card"><div class="card-title">下一个发工资</div><div class="card-countdown" id="salary"></div></div>
+  <div class="card"><div class="card-title">元旦</div><div class="card-countdown" id="yuandan"></div></div>
   <div class="card"><div class="card-title">宝宝生日</div><div class="card-countdown" id="baby"></div></div>
+  <div class="card"><div class="card-title">春节</div><div class="card-countdown" id="newyear"></div></div>
   <div class="card"><div class="card-title">劳动节</div><div class="card-countdown" id="labour"></div></div>
   <div class="card"><div class="card-title">老王生日</div><div class="card-countdown" id="laowang"></div></div>
   <div class="card"><div class="card-title">自己生日</div><div class="card-countdown" id="me"></div></div>
   <div class="card"><div class="card-title">国庆节</div><div class="card-countdown" id="guoqing"></div></div>
-  <div class="card"><div class="card-title">元旦</div><div class="card-countdown" id="yuandan"></div></div>
-  <div class="card"><div class="card-title">春节</div><div class="card-countdown" id="newyear"></div></div>
+
 </div>
 
 <script>
@@ -221,16 +222,15 @@ function nextDateFuture(month, day) {
 // 倒计时更新函数
 function updateCountdowns() {
     let now = new Date();
-
-    document.getElementById("newyear").innerText = formatCountdown(getNextSpringFestival() - now);
+    document.getElementById("weekend").innerText = formatCountdown(nextWeekend() - now);
+    document.getElementById("salary").innerText = formatCountdown(nextSalary() - now);
+    document.getElementById("yuandan").innerText = formatCountdown(nextDateFuture(1,1) - now);
     document.getElementById("baby").innerText = formatCountdown(nextDateFuture(1,18) - now);
     document.getElementById("me").innerText = formatCountdown(nextDateFuture(7,30) - now);
     document.getElementById("laowang").innerText = formatCountdown(nextDateFuture(6,1) - now);
     document.getElementById("guoqing").innerText = formatCountdown(nextDateFuture(10,1) - now);
     document.getElementById("labour").innerText = formatCountdown(nextDateFuture(5,1) - now);
-    document.getElementById("yuandan").innerText = formatCountdown(nextDateFuture(1,1) - now);
-    document.getElementById("weekend").innerText = formatCountdown(nextWeekend() - now);
-    document.getElementById("salary").innerText = formatCountdown(nextSalary() - now);
+    document.getElementById("newyear").innerText = formatCountdown(getNextSpringFestival() - now);
 }
 
 
