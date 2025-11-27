@@ -132,15 +132,15 @@
 </div>
 
 <div class="container">
-  <div class="card"><div class="card-title">春节</div><div class="card-countdown" id="newyear"></div></div>
-  <div class="card"><div class="card-title">宝宝生日</div><div class="card-countdown" id="baby"></div></div>
-  <div class="card"><div class="card-title">自己生日</div><div class="card-countdown" id="me"></div></div>
-  <div class="card"><div class="card-title">老王生日</div><div class="card-countdown" id="laowang"></div></div>
-  <div class="card"><div class="card-title">国庆节</div><div class="card-countdown" id="guoqing"></div></div>
-  <div class="card"><div class="card-title">劳动节</div><div class="card-countdown" id="labour"></div></div>
-  <div class="card"><div class="card-title">元旦</div><div class="card-countdown" id="yuandan"></div></div>
   <div class="card"><div class="card-title">最近周末</div><div class="card-countdown" id="weekend"></div></div>
   <div class="card"><div class="card-title">下一个发工资</div><div class="card-countdown" id="salary"></div></div>
+  <div class="card"><div class="card-title">宝宝生日</div><div class="card-countdown" id="baby"></div></div>
+  <div class="card"><div class="card-title">劳动节</div><div class="card-countdown" id="labour"></div></div>
+  <div class="card"><div class="card-title">老王生日</div><div class="card-countdown" id="laowang"></div></div>
+  <div class="card"><div class="card-title">自己生日</div><div class="card-countdown" id="me"></div></div>
+  <div class="card"><div class="card-title">国庆节</div><div class="card-countdown" id="guoqing"></div></div>
+  <div class="card"><div class="card-title">元旦</div><div class="card-countdown" id="yuandan"></div></div>
+  <div class="card"><div class="card-title">春节</div><div class="card-countdown" id="newyear"></div></div>
 </div>
 
 <script>
@@ -207,7 +207,7 @@
   function getSpringFestival() {
     const table = {2025:"2025-01-29",2026:"2026-02-17",2027:"2027-02-06"};
     let year = new Date().getFullYear();
-    return new Date(table[year]);
+    return new Date(table[year+1]);
   }
 
 function nextDateFuture(month, day) {
