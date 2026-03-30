@@ -1,1 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>待办事项</title>
+<link rel="stylesheet" href="css/common.css">
+<style>
+  body {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
+  h1 { margin: 20px 0 20px; font-size: 2rem; }
+
+  .todo-app {
+    width: 90%;
+    max-width: 600px;
+    margin-bottom: 50px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .input-row input {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    outline: none;
+  }
+
+  .input-row button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.3);
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .input-row button:hover { background: rgba(255,255,255,0.5); }
+
+  .todo-list { list-style: none; padding: 0; }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: opacity 0.3s;
+  }
+
+  .todo-item.done { opacity: 0.5; }
+  .todo-item.done .todo-text { text-decoration: line-through; }
+
+  .todo-item input[type="checkbox"] {
+    width: 20px; height: 20px;
+    cursor: pointer;
+  }
+
+  .todo-text { flex: 1; font-size: 1.05rem; }
+
+  .todo-delete {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .todo-delete:hover { color: #fff; }
+
+  .stats {
+    text-align: center;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← 返回首页</a>
+
+<h1>📝 待办事项</h1>
+
+<div class="todo-app">
+  <div class="input-row">
+    <input type="text" id="todoInput" placeholder="添加新的待办..." onkeydown="if(event.key==='Enter') addTodo()">
+    <button onclick="addTodo()">添加</button>
+  </div>
+  <ul class="todo-list" id="todoList"></ul>
+  <div class="stats" id="stats"></div>
+</div>
+
+<script>
+  const STORAGE_KEY = "calendar_todos";
+
+  function loadTodos() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveTodos(todos) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  }
+
+  function render() {
+    const todos = loadTodos();
+    const list = document.getElementById("todoList");
+    const stats = document.getElementById("stats");
+
+    list.innerHTML = todos.map((t, i) => `
+      <li class="todo-item ${t.done ? 'done' : ''}">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${i})">
+        <span class="todo-text">${escapeHtml(t.text)}</span>
+        <button class="todo-delete" onclick="deleteTodo(${i})">✕</button>
+      </li>
+    `).join("");
+
+    const done = todos.filter(t => t.done).length;
+    stats.textContent = todos.length > 0
+      ? `共 ${todos.length} 项，已完成 ${done} 项`
+      : "暂无待办";
+  }
+
+  function addTodo() {
+    const input = document.getElementById("todoInput");
+    const text = input.value.trim();
+    if (!text) return;
+    const todos = loadTodos();
+    todos.push({ text, done: false });
+    saveTodos(todos);
+    input.value = "";
+    render();
+  }
+
+  function toggleTodo(index) {
+    const todos = loadTodos();
+    todos[index].done = !todos[index].done;
+    saveTodos(todos);
+    render();
+  }
+
+  function deleteTodo(index) {
+    const todos = loadTodos();
+    todos.splice(index, 1);
+    saveTodos(todos);
+    render();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  render();
+</script>
+
+</body>
+</html>

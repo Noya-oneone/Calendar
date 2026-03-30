@@ -3,257 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>快乐倒计时</title>
+<title>我的工具页</title>
+<link rel="stylesheet" href="css/common.css">
 <style>
-  /* 全局样式 */
   body {
-    margin: 0;
-    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background: linear-gradient(135deg, #89f7fe, #66a6ff);
+  }
+
+  .hero {
+    margin-top: 40px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 2.4rem;
     color: #fff;
-    overflow-x: hidden;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
   }
 
-  /* 背景图淡入动画 */
-  body::after {
-    content: '';
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
-    opacity: 0.2;
-    z-index: -1;
-    animation: fadein 10s ease-in-out infinite alternate;
+  .hero p {
+    color: rgba(255,255,255,0.85);
+    font-size: 1.1rem;
+    margin-top: 8px;
   }
 
-  @keyframes fadein {
-    0% {opacity: 0.1;}
-    50% {opacity: 0.25;}
-    100% {opacity: 0.1;}
-  }
-
-  h1 {
-    margin: 20px 0 10px 0;
-    font-size: 2rem;
-    text-align: center;
-  }
-
-  .quote {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-    text-align: center;
-    font-style: italic;
-  }
-
-  /* 翻页时钟 */
-  .clock {
-    display: flex;
-    justify-content: center;
-    font-family: monospace;
-    font-size: 3rem;
-    margin-bottom: 30px;
-  }
-
-  .flip-card {
-    background: rgba(0,0,0,0.6);
-    color: #0f0;
-    padding: 10px 20px;
-    margin: 0 5px;
-    border-radius: 10px;
-    perspective: 1000px;
-    position: relative;
-  }
-
-  .flip-card span {
-    display: block;
-    transform-style: preserve-3d;
-    transition: transform 0.6s;
-  }
-
-  .flip-card.flip span {
-    transform: rotateX(180deg);
-  }
-
-  /* 瀑布流卡片布局 */
-  .container {
+  .nav-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
+    max-width: 960px;
     width: 90%;
-    max-width: 1200px;
-    margin-bottom: 50px;
+    margin: 40px auto 60px;
   }
 
-  .card {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    padding: 20px;
-    border-radius: 15px;
+  .nav-card {
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px 20px;
     text-align: center;
-    transition: transform 0.3s;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.3s, background 0.3s;
   }
 
-  .card:hover {
-    transform: translateY(-5px) scale(1.03);
+  .nav-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    background: rgba(255,255,255,0.35);
   }
 
-  .card-title {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #fffa;
+  .nav-card .icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
   }
 
-  .card-countdown {
-    font-size: 1.2rem;
-    font-weight: bold;
+  .nav-card .label {
+    font-size: 1.3rem;
+    font-weight: 600;
   }
 
-  @media (max-width: 600px) {
-    .clock { font-size: 2rem; }
-    .card-title { font-size: 1.2rem; }
-    .card-countdown { font-size: 1rem; }
+  .nav-card .desc {
+    font-size: 0.9rem;
+    margin-top: 8px;
+    opacity: 0.8;
   }
-
 </style>
 </head>
 <body>
 
-<h1>🎉 快乐倒计时</h1>
-<div class="quote" id="quote"></div>
-
-<div class="clock">
-  <div class="flip-card"><span id="hour">00</span></div>:
-  <div class="flip-card"><span id="minute">00</span></div>:
-  <div class="flip-card"><span id="second">00</span></div>
+<div class="hero">
+  <h1>📅 我的工具页</h1>
+  <p id="quote"></p>
 </div>
 
-<div class="container">
-  <div class="card"><div class="card-title">最近周末</div><div class="card-countdown" id="weekend"></div></div>
-  <div class="card"><div class="card-title">下一个发工资</div><div class="card-countdown" id="salary"></div></div>
-  <div class="card"><div class="card-title">元旦</div><div class="card-countdown" id="yuandan"></div></div>
-  <div class="card"><div class="card-title">宝宝生日</div><div class="card-countdown" id="baby"></div></div>
-  <div class="card"><div class="card-title">春节</div><div class="card-countdown" id="newyear"></div></div>
-  <div class="card"><div class="card-title">劳动节</div><div class="card-countdown" id="labour"></div></div>
-  <div class="card"><div class="card-title">老王生日</div><div class="card-countdown" id="laowang"></div></div>
-  <div class="card"><div class="card-title">自己生日</div><div class="card-countdown" id="me"></div></div>
-  <div class="card"><div class="card-title">国庆节</div><div class="card-countdown" id="guoqing"></div></div>
-
+<div class="nav-grid">
+  <a class="nav-card" href="countdown.html">
+    <div class="icon">🎉</div>
+    <div class="label">快乐倒计时</div>
+    <div class="desc">节日、生日、发薪日倒计时</div>
+  </a>
+  <a class="nav-card" href="calendar.html">
+    <div class="icon">📅</div>
+    <div class="label">日历</div>
+    <div class="desc">月历视图，标记重要日期</div>
+  </a>
+  <a class="nav-card" href="clock.html">
+    <div class="icon">⏰</div>
+    <div class="label">时钟</div>
+    <div class="desc">实时翻页时钟</div>
+  </a>
+  <a class="nav-card" href="todo.html">
+    <div class="icon">📝</div>
+    <div class="label">待办事项</div>
+    <div class="desc">添加、完成、删除待办</div>
+  </a>
 </div>
 
+<script src="js/quotes.js"></script>
 <script>
-  // 随机励志句子
-  const quotes = [
-    "每天都是新的开始 🌞",
-    "相信自己，你可以的 💪",
-    "快乐来自于每一刻的努力 ✨",
-    "小步前进，也能走很远 🚀",
-    "用微笑面对每一天 😄"
-  ];
-  document.getElementById("quote").innerText = quotes[Math.floor(Math.random()*quotes.length)];
-
-  // 翻页时钟
-  function updateClock() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    const hour = document.getElementById("hour");
-    const minute = document.getElementById("minute");
-    const second = document.getElementById("second");
-    hour.innerText = h;
-    minute.innerText = m;
-    second.innerText = s;
-  }
-
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // 倒计时函数
-  function formatCountdown(ms) {
-    let d = Math.floor(ms / (1000 * 60 * 60 * 24));
-    let h = Math.floor(ms / (1000 * 60 * 60)) % 24;
-    let m = Math.floor(ms / (1000 * 60)) % 60;
-    let s = Math.floor(ms / 1000) % 60;
-    return `${d}天 ${h}小时 ${m}分 ${s}秒`;
-  }
-
-  function nextDate(month, day) {
-    let now = new Date();
-    let year = now.getFullYear();
-    let date = new Date(year, month-1, day);
-    if (date < now) date = new Date(year+1, month-1, day);
-    return date;
-  }
-
-  function nextWeekend() {
-    let now = new Date();
-    let day = now.getDay();
-    let diff = (6 - day + 7) % 7; 
-    if(diff===0) diff=7;
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate()+diff);
-  }
-
-  function nextSalary() {
-    let now = new Date();
-    let day = 5;
-    let target = new Date(now.getFullYear(), now.getMonth(), day);
-    if(target < now) target = new Date(now.getFullYear(), now.getMonth()+1, day);
-    return target;
-  }
-
-  function getSpringFestival() {
-    const table = {2025:"2025-01-29",2026:"2026-02-17",2027:"2027-02-06"};
-    let year = new Date().getFullYear();
-    return new Date(table[year+1]);
-  }
-
-function nextDateFuture(month, day) {
-    let now = new Date();
-    let year = now.getFullYear();
-    let date = new Date(year, month-1, day);
-    if (date <= now) date = new Date(year+1, month-1, day);
-    return date;
-}
-  
-// 倒计时更新函数
-function updateCountdowns() {
-    let now = new Date();
-    document.getElementById("weekend").innerText = formatCountdown(nextWeekend() - now);
-    document.getElementById("salary").innerText = formatCountdown(nextSalary() - now);
-    document.getElementById("yuandan").innerText = formatCountdown(nextDateFuture(1,1) - now);
-    document.getElementById("baby").innerText = formatCountdown(nextDateFuture(1,18) - now);
-    document.getElementById("me").innerText = formatCountdown(nextDateFuture(7,30) - now);
-    document.getElementById("laowang").innerText = formatCountdown(nextDateFuture(6,1) - now);
-    document.getElementById("guoqing").innerText = formatCountdown(nextDateFuture(10,1) - now);
-    document.getElementById("labour").innerText = formatCountdown(nextDateFuture(5,1) - now);
-    document.getElementById("newyear").innerText = formatCountdown(getNextSpringFestival() - now);
-}
-
-
-// 春节（使用春节表，确保未来日期）
-function getNextSpringFestival() {
-    const table = {
-        2025:"2025-01-29",
-        2026:"2026-02-17",
-        2027:"2027-02-06",
-        2028:"2028-01-26",
-        2029:"2029-02-13"
-    };
-    let now = new Date();
-    let year = now.getFullYear();
-    let date = new Date(table[year]);
-    if(date <= now){
-        date = new Date(table[year+1]);
-    }
-    return date;
-}
-
-  setInterval(updateCountdowns, 1000);
-  updateCountdowns();
+  document.getElementById("quote").innerText = getRandomQuote();
 </script>
 
 </body>

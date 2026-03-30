@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时钟</title>
+<link rel="stylesheet" href="css/common.css">
+<style>
+  body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clock-container {
+    text-align: center;
+    margin-top: -60px;
+  }
+
+  .time {
+    font-family: monospace;
+    font-size: 6rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #0f0;
+    text-shadow: 0 0 20px rgba(0,255,0,0.4);
+  }
+
+  .date-info {
+    font-size: 1.4rem;
+    margin-top: 16px;
+    opacity: 0.8;
+  }
+
+  .week-info {
+    font-size: 1.1rem;
+    margin-top: 8px;
+    opacity: 0.6;
+  }
+
+  .seconds-bar {
+    width: 300px;
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin: 30px auto 0;
+    overflow: hidden;
+  }
+
+  .seconds-bar .fill {
+    height: 100%;
+    background: #0f0;
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  @media (max-width: 600px) {
+    .time { font-size: 3.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← 返回首页</a>
+
+<div class="clock-container">
+  <div class="time" id="time">00:00:00</div>
+  <div class="date-info" id="dateInfo"></div>
+  <div class="week-info" id="weekInfo"></div>
+  <div class="seconds-bar"><div class="fill" id="secBar"></div></div>
+</div>
+
+<script>
+  const WEEK_NAMES = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+
+  function update() {
+    const now = new Date();
+    document.getElementById("time").innerText = now.toLocaleTimeString("zh-CN", { hour12: false });
+    document.getElementById("dateInfo").innerText =
+      `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日`;
+    document.getElementById("weekInfo").innerText = WEEK_NAMES[now.getDay()];
+    document.getElementById("secBar").style.width = ((now.getSeconds() / 59) * 100) + "%";
+  }
+
+  update();
+  setInterval(update, 1000);
+</script>
+
+</body>
+</html>
