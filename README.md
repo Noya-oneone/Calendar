@@ -23,8 +23,9 @@ Calendar/
 │   ├── countdown.js        # 倒计时核心逻辑（事件配置、日期计算）
 │   ├── dock.js             # macOS 风格 Dock 导航栏
 │   └── favicon.js          # 动态 favicon（显示当天日期）
-├── docs/
-│   └── quotes.md           # 励志语录库（按分类维护，程序自动读取）
+├── docs/                     # 配置中心（md 格式，可随时编辑）
+│   ├── quotes.md           # 励志语录库（按分类维护）
+│   └── foods.md            # 食物转盘配置（早餐/午餐/晚餐）
 ├── index.html              # 日历首页
 ├── countdown.html          # 快乐倒计时
 ├── clock.html              # 时钟
@@ -69,4 +70,4 @@ open index.html
 
 ### 添加转盘食物
 
-修改 `food.html` 中的 `FOODS` 对象，在对应餐次数组中添加即可。
+在 `docs/foods.md` 对应分类（早餐/午餐/晚餐）下新增一行 `- 食物名称` 即可，转盘自动更新。

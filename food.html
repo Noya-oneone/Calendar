@@ -235,61 +235,86 @@
 
 <script src="js/dock.js"></script>
 <script>
-  // ===== Food data =====
-  const FOODS = {
-    breakfast: [
-      '豆浆油条', '包子', '煎饼果子', '小笼包', '粥+咸菜',
-      '三明治', '牛奶麦片', '肠粉', '饺子', '鸡蛋灌饼',
-      '手抓饼', '豆腐脑', '面包牛奶', '红薯粥', '馄饨'
-    ],
-    lunch: [
-      '黄焖鸡米饭', '兰州拉面', '麻辣烫', '盖浇饭', '炒饭',
-      '饺子', '汉堡薯条', '日式拉面', '烤肉饭', '沙县小吃',
-      '麻辣香锅', '水煮鱼', '酸菜鱼', '回锅肉饭', '番茄炒蛋饭',
-      '寿司', '鸡公煲', '冒菜'
-    ],
-    dinner: [
-      '火锅', '烧烤', '披萨', '螺蛳粉', '酸辣粉',
-      '串串香', '小龙虾', '韩式烤肉', '铁板烧', '粤式煲仔饭',
-      '炸鸡啤酒', '日料', '泰式冬阴功', '牛排', '水饺',
-      '干锅', '烤鱼', '重庆小面'
-    ]
+  // ===== Default food data (fallback) =====
+  const DEFAULT_FOODS = {
+    breakfast: ['热干面','豆皮','面窝','糊汤粉+油条','汤包（四季美）','糯米鸡','欢喜坨','米粑粑','苕面窝','豆丝','牛肉粉','鲜鱼糊汤粉','烧梅（烧麦）','油饼包烧麦','蛋酒','米酒汤圆','煎包','炸酱面','牛肉面','糯米包油条'],
+    lunch: ['黄焖鸡米饭','兰州拉面','麻辣烫','盖浇饭','炒饭','饺子','汉堡薯条','日式拉面','烤肉饭','沙县小吃','麻辣香锅','水煮鱼','酸菜鱼','回锅肉饭','番茄炒蛋饭','寿司','鸡公煲','冒菜'],
+    dinner: ['火锅','烧烤','披萨','螺蛳粉','酸辣粉','串串香','小龙虾','韩式烤肉','铁板烧','粤式煲仔饭','炸鸡啤酒','日料','泰式冬阴功','牛排','水饺','干锅','烤鱼','重庆小面']
   };
 
-  // Color palettes per meal
-  const COLORS = {
-    breakfast: [
-      '#FF9A76', '#FFEAA7', '#FDCB6E', '#E17055', '#FAB1A0',
-      '#FF7675', '#FD79A8', '#FFBE76', '#F0932B', '#BADC58',
-      '#6AB04C', '#DFE6E9', '#FFEAA7', '#FF9A76', '#FDCB6E'
-    ],
-    lunch: [
-      '#74B9FF', '#A29BFE', '#6C5CE7', '#00CEC9', '#55E6C1',
-      '#58B19F', '#0984E3', '#00B894', '#FDCB6E', '#E17055',
-      '#D63031', '#74B9FF', '#A29BFE', '#6C5CE7', '#00CEC9',
-      '#55E6C1', '#58B19F', '#0984E3'
-    ],
-    dinner: [
-      '#E84393', '#FD79A8', '#A29BFE', '#6C5CE7', '#FF7675',
-      '#D63031', '#E17055', '#FAB1A0', '#FF9FF3', '#F368E0',
-      '#C44569', '#E84393', '#FD79A8', '#A29BFE', '#6C5CE7',
-      '#FF7675', '#D63031', '#E17055'
-    ]
+  // Color palette pool — auto-cycles based on item count
+  const COLOR_POOLS = {
+    breakfast: ['#FF9A76','#FFEAA7','#FDCB6E','#E17055','#FAB1A0','#FF7675','#FD79A8','#FFBE76','#F0932B','#BADC58','#6AB04C','#DFE6E9','#F8A5C2','#F7DC6F','#82E0AA'],
+    lunch: ['#74B9FF','#A29BFE','#6C5CE7','#00CEC9','#55E6C1','#58B19F','#0984E3','#00B894','#FDCB6E','#E17055','#D63031','#81ECEC','#DFE6E9','#A3CB38','#FDA7DF'],
+    dinner: ['#E84393','#FD79A8','#A29BFE','#6C5CE7','#FF7675','#D63031','#E17055','#FAB1A0','#FF9FF3','#F368E0','#C44569','#786FA6','#F8A5C2','#63CDDA','#CF6A87']
   };
+
+  /**
+   * Parse docs/foods.md into { breakfast: [...], lunch: [...], dinner: [...] }
+   * Sections are identified by ## headings containing 早餐/午餐/晚餐
+   */
+  function parseFoodsMd(text) {
+    const result = { breakfast: [], lunch: [], dinner: [] };
+    let current = null;
+
+    const sectionMap = { '早餐': 'breakfast', '午餐': 'lunch', '晚餐': 'dinner' };
+
+    for (const line of text.split('\n')) {
+      const trimmed = line.trim();
+      // Check for section header
+      if (trimmed.startsWith('##')) {
+        current = null;
+        for (const [keyword, key] of Object.entries(sectionMap)) {
+          if (trimmed.includes(keyword)) { current = key; break; }
+        }
+        continue;
+      }
+      // Collect items
+      if (current && /^- .+/.test(trimmed)) {
+        const item = trimmed.replace(/^- /, '').trim();
+        if (item) result[current].push(item);
+      }
+    }
+    return result;
+  }
+
+  async function loadFoods() {
+    try {
+      const resp = await fetch('docs/foods.md');
+      if (!resp.ok) throw new Error('fetch failed');
+      const text = await resp.text();
+      const parsed = parseFoodsMd(text);
+      // Use parsed if it has items, otherwise fallback per category
+      return {
+        breakfast: parsed.breakfast.length > 0 ? parsed.breakfast : DEFAULT_FOODS.breakfast,
+        lunch: parsed.lunch.length > 0 ? parsed.lunch : DEFAULT_FOODS.lunch,
+        dinner: parsed.dinner.length > 0 ? parsed.dinner : DEFAULT_FOODS.dinner,
+      };
+    } catch {
+      return DEFAULT_FOODS;
+    }
+  }
+
+  function getColors(meal, count) {
+    const pool = COLOR_POOLS[meal];
+    return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
+  }
 
   // ===== Wheel state =====
   const wheels = {};
   let spinning = { breakfast: false, lunch: false, dinner: false };
 
+  let FOODS = null;
+
   function initWheel(meal) {
     const canvas = document.getElementById(`wheel-${meal}`);
     const ctx = canvas.getContext('2d');
     const items = FOODS[meal];
-    const colors = COLORS[meal];
+    const colors = getColors(meal, items.length);
 
     wheels[meal] = {
       canvas, ctx, items, colors,
-      rotation: Math.random() * Math.PI * 2, // random start
+      rotation: Math.random() * Math.PI * 2,
       animId: null
     };
 
@@ -425,12 +450,14 @@
     }
   }
 
-  // Init
-  initWheel('breakfast');
-  initWheel('lunch');
-  initWheel('dinner');
-
-  renderDock('food');
+  // Init — load config then render
+  (async () => {
+    FOODS = await loadFoods();
+    initWheel('breakfast');
+    initWheel('lunch');
+    initWheel('dinner');
+    renderDock('food');
+  })();
 </script>
 
 </body>
