@@ -251,6 +251,7 @@
 
   /**
    * Parse docs/foods.md into { breakfast: [...], lunch: [...], dinner: [...] }
+   * Reads food names from the first column of markdown tables.
    * Sections are identified by ## headings containing 早餐/午餐/晚餐
    */
   function parseFoodsMd(text) {
@@ -269,10 +270,13 @@
         }
         continue;
       }
-      // Collect items
-      if (current && /^- .+/.test(trimmed)) {
-        const item = trimmed.replace(/^- /, '').trim();
-        if (item) result[current].push(item);
+      // Parse table rows: | 食物名 | ... | ... | ... |
+      // Skip header row (contains 食物) and separator row (contains ---)
+      if (current && trimmed.startsWith('|') && !trimmed.includes('---')) {
+        const cells = trimmed.split('|').map(c => c.trim()).filter(Boolean);
+        if (cells.length > 0 && cells[0] !== '食物') {
+          result[current].push(cells[0]);
+        }
       }
     }
     return result;
