@@ -1,15 +1,15 @@
 # Calendar - 个人工具页
 
-纯前端个人工具集合，零依赖，打开即用。
+纯前端个人工具集合，零依赖，打开即用。macOS 风格 Dock 导航。
 
 ## 功能
 
 | 页面 | 文件 | 说明 |
 |------|------|------|
-| 🏠 首页 | [index.html](index.html) | 导航入口，随机励志语 |
+| 📅 日历（首页） | [index.html](index.html) | 月历视图 + 今日信息卡片（距周末/发薪/下一节日） |
 | 🎉 快乐倒计时 | [countdown.html](countdown.html) | 翻页时钟 + 9 个倒计时卡片（周末、发薪、生日、节日） |
-| 📅 日历 | [calendar.html](calendar.html) | 月历视图，前后翻页，标记重要日期（生日/节日/发薪日） |
 | ⏰ 时钟 | [clock.html](clock.html) | 全屏实时时钟，日期、星期、秒数进度条 |
+| 🍽 今天吃什么 | [food.html](food.html) | 三个随机转盘（早餐/午餐/晚餐），一键决定三餐 |
 | 📝 待办事项 | [todo.html](todo.html) | 添加/完成/删除待办，localStorage 持久化 |
 
 ## 项目结构
@@ -17,26 +17,30 @@
 ```
 Calendar/
 ├── css/
-│   └── common.css        # 全局共用样式
+│   └── common.css          # 全局样式 + macOS Dock 组件
 ├── js/
-│   ├── quotes.js         # 励志语录（10 条）
-│   └── countdown.js      # 倒计时核心逻辑（事件配置、日期计算）
-├── index.html            # 首页（导航）
-├── countdown.html        # 快乐倒计时
-├── calendar.html         # 日历
-├── clock.html            # 时钟
-├── todo.html             # 待办事项
+│   ├── quotes.js           # 励志语录（从 docs/quotes.md 动态加载）
+│   ├── countdown.js        # 倒计时核心逻辑（事件配置、日期计算）
+│   ├── dock.js             # macOS 风格 Dock 导航栏
+│   └── favicon.js          # 动态 favicon（显示当天日期）
+├── docs/
+│   └── quotes.md           # 励志语录库（按分类维护，程序自动读取）
+├── index.html              # 日历首页
+├── countdown.html          # 快乐倒计时
+├── clock.html              # 时钟
+├── food.html               # 今天吃什么转盘
+├── todo.html               # 待办事项
 └── README.md
 ```
 
 ## 使用
 
 ```bash
-# 直接打开
-open index.html
-
-# 或用本地服务器
+# 推荐用本地服务器（quotes.md 需要 fetch 加载）
 npx serve .
+
+# 或直接打开（语录会 fallback 到内置默认列表）
+open index.html
 ```
 
 ## 技术
@@ -44,13 +48,25 @@ npx serve .
 - 纯 HTML / CSS / JavaScript，零框架零依赖
 - CSS Grid 响应式布局
 - backdrop-filter 毛玻璃效果
+- Canvas 2D 转盘绘制与动画
 - localStorage 数据持久化（待办事项）
+- 动态 SVG favicon（每天自动更新日期）
 - 倒计时事件数据驱动（`js/countdown.js` 中的 `COUNTDOWN_EVENTS` 数组）
 
 ## 自定义
 
-修改 `js/countdown.js` 中的 `COUNTDOWN_EVENTS` 数组即可增减倒计时事件：
+### 添加倒计时事件
+
+修改 `js/countdown.js` 中的 `COUNTDOWN_EVENTS` 数组：
 
 ```js
 { id: "xxx", title: "显示标题", getDate: () => nextFutureDate(月, 日) }
 ```
+
+### 添加励志语录
+
+在 `docs/quotes.md` 对应分类下新增一行 `- 你的句子` 即可，程序自动读取。
+
+### 添加转盘食物
+
+修改 `food.html` 中的 `FOODS` 对象，在对应餐次数组中添加即可。

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天吃什么</title>
+<link rel="stylesheet" href="css/common.css">
+<script src="js/favicon.js"></script>
+<style>
+  body {
+    background: linear-gradient(135deg, #ff6b35, #f7c59f, #efefd0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    margin: 24px 0 8px;
+    font-size: 2rem;
+    text-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+  }
+
+  .subtitle {
+    opacity: 0.8;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+  }
+
+  .wheels {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 94%;
+    max-width: 1100px;
+  }
+
+  .wheel-card {
+    flex: 1;
+    min-width: 280px;
+    max-width: 340px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wheel-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* Canvas wheel */
+  .wheel-container {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin-bottom: 16px;
+  }
+
+  .wheel-container canvas {
+    width: 240px;
+    height: 240px;
+  }
+
+  /* Center pointer */
+  .wheel-pointer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #333;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.15s;
+  }
+
+  .wheel-pointer:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .wheel-pointer:active {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  /* Top arrow indicator */
+  .wheel-arrow {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 18px solid rgba(255,255,255,0.95);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    z-index: 3;
+  }
+
+  .result {
+    font-size: 1.3rem;
+    font-weight: 700;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  .result.pop {
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Spin all button */
+  .spin-all-btn {
+    margin: 24px 0 10px;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .spin-all-btn:hover {
+    background: rgba(255,255,255,0.4);
+    transform: translateY(-2px);
+  }
+
+  .spin-all-btn:active {
+    transform: translateY(0);
+  }
+
+  .spin-all-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Final result banner */
+  .final-result {
+    margin-top: 10px;
+    padding: 16px 28px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    font-size: 1rem;
+    text-align: center;
+    line-height: 1.8;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .final-result.show {
+    opacity: 1;
+  }
+
+  @media (max-width: 700px) {
+    .wheels { flex-direction: column; align-items: center; }
+    .wheel-card { max-width: 320px; }
+    .wheel-container { width: 200px; height: 200px; }
+    .wheel-container canvas { width: 200px; height: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🍽 今天吃什么</h1>
+<p class="subtitle">选择困难症终结者 — 转一转，命运决定你的胃</p>
+
+<div class="wheels">
+  <div class="wheel-card">
+    <div class="wheel-title">🌅 早餐</div>
+    <div class="wheel-container">
+      <canvas id="wheel-breakfast" width="480" height="480"></canvas>
+      <div class="wheel-arrow"></div>
+      <div class="wheel-pointer" onclick="spinWheel('breakfast')">GO</div>
+    </div>
+    <div class="result" id="result-breakfast">点击转盘试试</div>
+  </div>
+
+  <div class="wheel-card">
+    <div class="wheel-title">☀️ 午餐</div>
+    <div class="wheel-container">
+      <canvas id="wheel-lunch" width="480" height="480"></canvas>
+      <div class="wheel-arrow"></div>
+      <div class="wheel-pointer" onclick="spinWheel('lunch')">GO</div>
+    </div>
+    <div class="result" id="result-lunch">点击转盘试试</div>
+  </div>
+
+  <div class="wheel-card">
+    <div class="wheel-title">🌙 晚餐</div>
+    <div class="wheel-container">
+      <canvas id="wheel-dinner" width="480" height="480"></canvas>
+      <div class="wheel-arrow"></div>
+      <div class="wheel-pointer" onclick="spinWheel('dinner')">GO</div>
+    </div>
+    <div class="result" id="result-dinner">点击转盘试试</div>
+  </div>
+</div>
+
+<button class="spin-all-btn" id="spinAllBtn" onclick="spinAll()">一键决定今天三餐!</button>
+<div class="final-result" id="finalResult"></div>
+
+<script src="js/dock.js"></script>
+<script>
+  // ===== Food data =====
+  const FOODS = {
+    breakfast: [
+      '豆浆油条', '包子', '煎饼果子', '小笼包', '粥+咸菜',
+      '三明治', '牛奶麦片', '肠粉', '饺子', '鸡蛋灌饼',
+      '手抓饼', '豆腐脑', '面包牛奶', '红薯粥', '馄饨'
+    ],
+    lunch: [
+      '黄焖鸡米饭', '兰州拉面', '麻辣烫', '盖浇饭', '炒饭',
+      '饺子', '汉堡薯条', '日式拉面', '烤肉饭', '沙县小吃',
+      '麻辣香锅', '水煮鱼', '酸菜鱼', '回锅肉饭', '番茄炒蛋饭',
+      '寿司', '鸡公煲', '冒菜'
+    ],
+    dinner: [
+      '火锅', '烧烤', '披萨', '螺蛳粉', '酸辣粉',
+      '串串香', '小龙虾', '韩式烤肉', '铁板烧', '粤式煲仔饭',
+      '炸鸡啤酒', '日料', '泰式冬阴功', '牛排', '水饺',
+      '干锅', '烤鱼', '重庆小面'
+    ]
+  };
+
+  // Color palettes per meal
+  const COLORS = {
+    breakfast: [
+      '#FF9A76', '#FFEAA7', '#FDCB6E', '#E17055', '#FAB1A0',
+      '#FF7675', '#FD79A8', '#FFBE76', '#F0932B', '#BADC58',
+      '#6AB04C', '#DFE6E9', '#FFEAA7', '#FF9A76', '#FDCB6E'
+    ],
+    lunch: [
+      '#74B9FF', '#A29BFE', '#6C5CE7', '#00CEC9', '#55E6C1',
+      '#58B19F', '#0984E3', '#00B894', '#FDCB6E', '#E17055',
+      '#D63031', '#74B9FF', '#A29BFE', '#6C5CE7', '#00CEC9',
+      '#55E6C1', '#58B19F', '#0984E3'
+    ],
+    dinner: [
+      '#E84393', '#FD79A8', '#A29BFE', '#6C5CE7', '#FF7675',
+      '#D63031', '#E17055', '#FAB1A0', '#FF9FF3', '#F368E0',
+      '#C44569', '#E84393', '#FD79A8', '#A29BFE', '#6C5CE7',
+      '#FF7675', '#D63031', '#E17055'
+    ]
+  };
+
+  // ===== Wheel state =====
+  const wheels = {};
+  let spinning = { breakfast: false, lunch: false, dinner: false };
+
+  function initWheel(meal) {
+    const canvas = document.getElementById(`wheel-${meal}`);
+    const ctx = canvas.getContext('2d');
+    const items = FOODS[meal];
+    const colors = COLORS[meal];
+
+    wheels[meal] = {
+      canvas, ctx, items, colors,
+      rotation: Math.random() * Math.PI * 2, // random start
+      animId: null
+    };
+
+    drawWheel(meal);
+  }
+
+  function drawWheel(meal) {
+    const { canvas, ctx, items, colors, rotation } = wheels[meal];
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const r = cx - 10;
+    const count = items.length;
+    const arc = (Math.PI * 2) / count;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation);
+
+    items.forEach((item, i) => {
+      const startAngle = i * arc;
+      const endAngle = startAngle + arc;
+
+      // Slice
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, startAngle, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Text
+      ctx.save();
+      ctx.rotate(startAngle + arc / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 3;
+      ctx.font = `bold ${count > 14 ? 13 : 15}px -apple-system, "Microsoft YaHei", sans-serif`;
+      ctx.fillText(item, r - 16, 5);
+      ctx.restore();
+    });
+
+    // Outer ring
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function spinWheel(meal) {
+    if (spinning[meal]) return;
+    spinning[meal] = true;
+
+    const w = wheels[meal];
+    const items = w.items;
+    const count = items.length;
+    const arc = (Math.PI * 2) / count;
+
+    // Random target: 5-8 full spins + random position
+    const extraSpins = (5 + Math.random() * 3) * Math.PI * 2;
+    const targetIndex = Math.floor(Math.random() * count);
+    // The pointer is at top (270 degrees = -PI/2), so we need the target slice center to align there
+    const targetAngle = -(targetIndex * arc + arc / 2) - Math.PI / 2;
+    const totalRotation = extraSpins + (targetAngle - (w.rotation % (Math.PI * 2)));
+
+    const startRotation = w.rotation;
+    const duration = 3000 + Math.random() * 1500;
+    const startTime = performance.now();
+
+    const resultEl = document.getElementById(`result-${meal}`);
+    resultEl.classList.remove('pop');
+    resultEl.textContent = '...';
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      w.rotation = startRotation + totalRotation * eased;
+      drawWheel(meal);
+
+      if (progress < 1) {
+        w.animId = requestAnimationFrame(animate);
+      } else {
+        spinning[meal] = false;
+        // Show result
+        const selected = items[targetIndex];
+        resultEl.textContent = selected;
+        resultEl.classList.add('pop');
+        checkAllDone();
+      }
+    }
+
+    if (w.animId) cancelAnimationFrame(w.animId);
+    w.animId = requestAnimationFrame(animate);
+  }
+
+  function spinAll() {
+    const btn = document.getElementById('spinAllBtn');
+    btn.disabled = true;
+    document.getElementById('finalResult').classList.remove('show');
+
+    // Stagger the spins slightly
+    spinWheel('breakfast');
+    setTimeout(() => spinWheel('lunch'), 300);
+    setTimeout(() => spinWheel('dinner'), 600);
+  }
+
+  function checkAllDone() {
+    if (spinning.breakfast || spinning.lunch || spinning.dinner) return;
+
+    const btn = document.getElementById('spinAllBtn');
+    btn.disabled = false;
+
+    const b = document.getElementById('result-breakfast').textContent;
+    const l = document.getElementById('result-lunch').textContent;
+    const d = document.getElementById('result-dinner').textContent;
+
+    if (b !== '点击转盘试试' && l !== '点击转盘试试' && d !== '点击转盘试试'
+        && b !== '...' && l !== '...' && d !== '...') {
+      const finalEl = document.getElementById('finalResult');
+      finalEl.innerHTML = `🌅 早餐：<strong>${b}</strong> &nbsp;|&nbsp; ☀️ 午餐：<strong>${l}</strong> &nbsp;|&nbsp; 🌙 晚餐：<strong>${d}</strong>`;
+      finalEl.classList.add('show');
+    }
+  }
+
+  // Init
+  initWheel('breakfast');
+  initWheel('lunch');
+  initWheel('dinner');
+
+  renderDock('food');
+</script>
+
+</body>
+</html>

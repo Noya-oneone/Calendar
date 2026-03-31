@@ -3,105 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的工具页</title>
+<title>日历 - 我的工具页</title>
 <link rel="stylesheet" href="css/common.css">
+<script src="js/favicon.js"></script>
 <style>
   body {
-    background: linear-gradient(135deg, #89f7fe, #66a6ff);
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .hero {
-    margin-top: 40px;
-    text-align: center;
+  /* Desktop wallpaper vibe */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(72,49,212,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(255,107,107,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(78,205,196,0.1) 0%, transparent 50%);
+    z-index: -1;
   }
 
-  .hero h1 {
-    font-size: 2.4rem;
-    color: #fff;
-    text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
-  }
-
-  .hero p {
-    color: rgba(255,255,255,0.85);
-    font-size: 1.1rem;
-    margin-top: 8px;
-  }
-
-  .nav-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    max-width: 960px;
-    width: 90%;
-    margin: 40px auto 60px;
-  }
-
-  .nav-card {
-    background: rgba(255,255,255,0.2);
+  .top-bar {
+    width: 100%;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    opacity: 0.7;
+    background: rgba(0,0,0,0.2);
     backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 30px 20px;
+  }
+
+  .top-bar-left { font-weight: 600; }
+
+  .page-title {
+    margin: 30px 0 6px;
+    font-size: 1.6rem;
+    font-weight: 300;
+    opacity: 0.6;
     text-align: center;
-    text-decoration: none;
+  }
+
+  .quote {
+    font-size: 0.95rem;
+    opacity: 0.5;
+    margin-bottom: 20px;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Calendar widget */
+  .calendar-widget {
+    width: 94%;
+    max-width: 640px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .cal-nav button {
+    background: rgba(255,255,255,0.1);
+    border: none;
     color: #fff;
-    transition: transform 0.3s, background 0.3s;
+    font-size: 1.1rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
   }
 
-  .nav-card:hover {
-    transform: translateY(-6px) scale(1.03);
-    background: rgba(255,255,255,0.35);
-  }
+  .cal-nav button:hover { background: rgba(255,255,255,0.2); }
 
-  .nav-card .icon {
-    font-size: 3rem;
-    margin-bottom: 12px;
-  }
-
-  .nav-card .label {
+  .month-label {
     font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .cal-header {
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 8px 0;
+    opacity: 0.5;
+    text-transform: uppercase;
+  }
+
+  .cal-day {
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    position: relative;
+    transition: background 0.2s;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .cal-day:not(.empty):hover {
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+  }
+
+  .cal-day.today {
+    background: rgba(255,59,48,0.8);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cal-day.has-event::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .cal-day.today.has-event::after {
+    background: #fff;
+  }
+
+  .cal-day.other-month {
+    opacity: 0.25;
+  }
+
+  .cal-day.weekend {
+    color: rgba(255,107,107,0.8);
+  }
+
+  .cal-day.today.weekend {
+    color: #fff;
+  }
+
+  .legend {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    opacity: 0.4;
+    text-align: center;
+  }
+
+  /* Today info card */
+  .today-info {
+    width: 94%;
+    max-width: 640px;
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .info-card {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .info-card .info-label {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-card .info-value {
+    font-size: 1.1rem;
     font-weight: 600;
   }
 
-  .nav-card .desc {
-    font-size: 0.9rem;
-    margin-top: 8px;
-    opacity: 0.8;
+  .info-card .info-sub {
+    font-size: 0.7rem;
+    opacity: 0.4;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 600px) {
+    .calendar-widget { padding: 16px; }
+    .cal-day { padding: 8px 0; font-size: 0.85rem; }
+    .today-info { flex-direction: column; }
+    .page-title { font-size: 1.3rem; }
   }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <h1>📅 我的工具页</h1>
-  <p id="quote"></p>
+<div class="top-bar">
+  <span class="top-bar-left">我的工具页</span>
+  <span id="topBarTime"></span>
 </div>
 
-<div class="nav-grid">
-  <a class="nav-card" href="countdown.html">
-    <div class="icon">🎉</div>
-    <div class="label">快乐倒计时</div>
-    <div class="desc">节日、生日、发薪日倒计时</div>
-  </a>
-  <a class="nav-card" href="calendar.html">
-    <div class="icon">📅</div>
-    <div class="label">日历</div>
-    <div class="desc">月历视图，标记重要日期</div>
-  </a>
-  <a class="nav-card" href="clock.html">
-    <div class="icon">⏰</div>
-    <div class="label">时钟</div>
-    <div class="desc">实时翻页时钟</div>
-  </a>
-  <a class="nav-card" href="todo.html">
-    <div class="icon">📝</div>
-    <div class="label">待办事项</div>
-    <div class="desc">添加、完成、删除待办</div>
-  </a>
+<div class="page-title" id="greeting"></div>
+<div class="quote" id="quote"></div>
+
+<div class="calendar-widget">
+  <div class="cal-nav">
+    <button id="prev">&#9664;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button id="next">&#9654;</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="legend">红点 = 重要日期（生日 / 节日 / 发薪日）</div>
+</div>
+
+<div class="today-info">
+  <div class="info-card">
+    <div class="info-label">距离周末</div>
+    <div class="info-value" id="weekendCount"></div>
+    <div class="info-sub" id="weekendDate"></div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">距离发薪</div>
+    <div class="info-value" id="salaryCount"></div>
+    <div class="info-sub">每月5号</div>
+  </div>
+  <div class="info-card">
+    <div class="info-label">下一个节日</div>
+    <div class="info-value" id="nextEventCount"></div>
+    <div class="info-sub" id="nextEventName"></div>
+  </div>
 </div>
 
 <script src="js/quotes.js"></script>
+<script src="js/countdown.js"></script>
+<script src="js/dock.js"></script>
 <script>
-  document.getElementById("quote").innerText = getRandomQuote();
+  // Greeting
+  const hour = new Date().getHours();
+  const greetings = hour < 6 ? '夜深了，注意休息' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+  document.getElementById("greeting").textContent = greetings;
+  getRandomQuoteAsync().then(q => document.getElementById("quote").textContent = q);
+
+  // Top bar time
+  function updateTopTime() {
+    const now = new Date();
+    const weekNames = ["周日","周一","周二","周三","周四","周五","周六"];
+    document.getElementById("topBarTime").textContent =
+      `${weekNames[now.getDay()]} ${now.getMonth()+1}月${now.getDate()}日 ${now.toLocaleTimeString("zh-CN",{hour12:false})}`;
+  }
+  updateTopTime();
+  setInterval(updateTopTime, 1000);
+
+  // Calendar
+  let currentYear, currentMonth;
+
+  function getEventDays(year, month) {
+    const days = new Set();
+    if (month >= 0) days.add(5);
+    COUNTDOWN_EVENTS.forEach(evt => {
+      const d = evt.getDate();
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        days.add(d.getDate());
+      }
+    });
+    return days;
+  }
+
+  function renderCalendar(year, month) {
+    currentYear = year;
+    currentMonth = month;
+
+    const grid = document.getElementById("calGrid");
+    const label = document.getElementById("monthLabel");
+    label.textContent = `${year} 年 ${month + 1} 月`;
+
+    const headers = ["日","一","二","三","四","五","六"];
+    let html = headers.map(h => `<div class="cal-header">${h}</div>`).join("");
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevDays = new Date(year, month, 0).getDate();
+    const today = new Date();
+    const eventDays = getEventDays(year, month);
+
+    // Previous month trailing days
+    for (let i = firstDay - 1; i >= 0; i--) {
+      html += `<div class="cal-day other-month">${prevDays - i}</div>`;
+    }
+
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = (year === today.getFullYear() && month === today.getMonth() && d === today.getDate());
+      const hasEvent = eventDays.has(d);
+      const dayOfWeek = new Date(year, month, d).getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const classes = ["cal-day"];
+      if (isToday) classes.push("today");
+      if (hasEvent) classes.push("has-event");
+      if (isWeekend) classes.push("weekend");
+      html += `<div class="${classes.join(" ")}">${d}</div>`;
+    }
+
+    // Next month leading days
+    const totalCells = firstDay + daysInMonth;
+    const remaining = (7 - totalCells % 7) % 7;
+    for (let i = 1; i <= remaining; i++) {
+      html += `<div class="cal-day other-month">${i}</div>`;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  document.getElementById("prev").addEventListener("click", () => {
+    let m = currentMonth - 1, y = currentYear;
+    if (m < 0) { m = 11; y--; }
+    renderCalendar(y, m);
+  });
+
+  document.getElementById("next").addEventListener("click", () => {
+    let m = currentMonth + 1, y = currentYear;
+    if (m > 11) { m = 0; y++; }
+    renderCalendar(y, m);
+  });
+
+  const now = new Date();
+  renderCalendar(now.getFullYear(), now.getMonth());
+
+  // Info cards
+  function updateInfoCards() {
+    const now = new Date();
+
+    // Weekend
+    const weekend = nextWeekend();
+    const wDiff = Math.ceil((weekend - now) / (1000*60*60*24));
+    document.getElementById("weekendCount").textContent = wDiff <= 0 ? '今天!' : `${wDiff} 天`;
+    const weekNames = ["周日","周一","周二","周三","周四","周五","周六"];
+    document.getElementById("weekendDate").textContent =
+      `${weekend.getMonth()+1}/${weekend.getDate()} ${weekNames[weekend.getDay()]}`;
+
+    // Salary
+    const salary = nextSalary();
+    const sDiff = Math.ceil((salary - now) / (1000*60*60*24));
+    document.getElementById("salaryCount").textContent = sDiff <= 0 ? '今天!' : `${sDiff} 天`;
+
+    // Next event (skip weekend and salary)
+    let closest = null;
+    let closestName = '';
+    COUNTDOWN_EVENTS.forEach(evt => {
+      if (evt.id === 'weekend' || evt.id === 'salary') return;
+      const d = evt.getDate();
+      if (!closest || d < closest) {
+        closest = d;
+        closestName = evt.title;
+      }
+    });
+    if (closest) {
+      const eDiff = Math.ceil((closest - now) / (1000*60*60*24));
+      document.getElementById("nextEventCount").textContent = eDiff <= 0 ? '今天!' : `${eDiff} 天`;
+      document.getElementById("nextEventName").textContent = closestName;
+    }
+  }
+  updateInfoCards();
+
+  // Dock
+  renderDock('calendar');
 </script>
 
 </body>

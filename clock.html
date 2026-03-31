@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>时钟</title>
 <link rel="stylesheet" href="css/common.css">
+<script src="js/favicon.js"></script>
 <style>
   body {
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
@@ -63,7 +64,6 @@
 </head>
 <body>
 
-<a class="back-link" href="index.html">← 返回首页</a>
 
 <div class="clock-container">
   <div class="time" id="time">00:00:00</div>
@@ -87,6 +87,8 @@
   update();
   setInterval(update, 1000);
 </script>
+<script src="js/dock.js"></script>
+<script>renderDock('clock');</script>
 
 </body>
 </html>

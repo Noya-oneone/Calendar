@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>快乐倒计时</title>
 <link rel="stylesheet" href="css/common.css">
+<script src="js/favicon.js"></script>
 <style>
   body {
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
@@ -88,7 +89,6 @@
 </head>
 <body>
 
-<a class="back-link" href="index.html">← 返回首页</a>
 
 <h1>🎉 快乐倒计时</h1>
 <div class="quote" id="quote"></div>
@@ -103,9 +103,10 @@
 
 <script src="js/quotes.js"></script>
 <script src="js/countdown.js"></script>
+<script src="js/dock.js"></script>
 <script>
   // 励志语
-  document.getElementById("quote").innerText = getRandomQuote();
+  getRandomQuoteAsync().then(q => document.getElementById("quote").innerText = q);
 
   // 动态生成卡片（基于 COUNTDOWN_EVENTS 配置）
   const container = document.getElementById("cards");
@@ -139,6 +140,7 @@
   setInterval(updateClock, 1000);
   setInterval(updateCountdowns, 1000);
 </script>
+<script>renderDock('countdown');</script>
 
 </body>
 </html>
