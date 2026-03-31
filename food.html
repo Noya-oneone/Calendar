@@ -384,13 +384,8 @@
     const count = items.length;
     const arc = (Math.PI * 2) / count;
 
-    // Random target: 5-8 full spins + random position
-    const extraSpins = (5 + Math.random() * 3) * Math.PI * 2;
-    const targetIndex = Math.floor(Math.random() * count);
-    // The pointer is at top (270 degrees = -PI/2), so we need the target slice center to align there
-    const targetAngle = -(targetIndex * arc + arc / 2) - Math.PI / 2;
-    const totalRotation = extraSpins + (targetAngle - (w.rotation % (Math.PI * 2)));
-
+    // Spin 5-8 full turns + random extra angle
+    const totalRotation = (5 + Math.random() * 3) * Math.PI * 2 + Math.random() * Math.PI * 2;
     const startRotation = w.rotation;
     const duration = 3000 + Math.random() * 1500;
     const startTime = performance.now();
@@ -402,8 +397,6 @@
     function animate(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-
-      // Ease out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
 
       w.rotation = startRotation + totalRotation * eased;
@@ -413,9 +406,13 @@
         w.animId = requestAnimationFrame(animate);
       } else {
         spinning[meal] = false;
-        // Show result
-        const selected = items[targetIndex];
-        resultEl.textContent = selected;
+        // Read which slice the pointer (top = 3PI/2) actually points to
+        const pointerAngle = 3 * Math.PI / 2;
+        const normRotation = ((w.rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        const wheelAngle = ((pointerAngle - normRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        const selectedIndex = Math.floor(wheelAngle / arc) % count;
+
+        resultEl.textContent = items[selectedIndex];
         resultEl.classList.add('pop');
         checkAllDone();
       }
