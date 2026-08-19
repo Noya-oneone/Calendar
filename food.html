@@ -126,6 +126,17 @@
     transition: all 0.3s;
   }
 
+  .result {
+    flex-direction: column;
+  }
+
+  .result .result-price {
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.75;
+    margin-top: 2px;
+  }
+
   .result.pop {
     animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -278,9 +289,12 @@
     dinner: ['#E84393','#FD79A8','#A29BFE','#6C5CE7','#FF7675','#D63031','#E17055','#FAB1A0','#FF9FF3','#F368E0','#C44569','#786FA6','#F8A5C2','#63CDDA','#CF6A87']
   };
 
+  // name -> price string (e.g. '6-8 元'), filled while parsing foods.md
+  const PRICES = {};
+
   /**
    * Parse docs/foods.md into { breakfast: [...], lunch: [...], dinner: [...] }
-   * Reads food names from the first column of markdown tables.
+   * Reads food names from the first column and prices from the second column.
    * Sections are identified by ## headings containing 早餐/午餐/晚餐
    */
   function parseFoodsMd(text) {
@@ -299,16 +313,29 @@
         }
         continue;
       }
-      // Parse table rows: | 食物名 | ... | ... | ... |
+      // Parse table rows: | 食物名 | 价格 | ... | ... |
       // Skip header row (contains 食物) and separator row (contains ---)
       if (current && trimmed.startsWith('|') && !trimmed.includes('---')) {
         const cells = trimmed.split('|').map(c => c.trim()).filter(Boolean);
         if (cells.length > 0 && cells[0] !== '食物') {
           result[current].push(cells[0]);
+          if (cells[1]) PRICES[cells[0]] = cells[1];
         }
       }
     }
     return result;
+  }
+
+  function priceOf(item) {
+    return PRICES[item] || '';
+  }
+
+  // Parse '6-8 元' / '60-120 元/人' into [min, max]; null if no number found
+  function priceRange(item) {
+    const m = priceOf(item).match(/(\d+)(?:\s*-\s*(\d+))?/);
+    if (!m) return null;
+    const min = Number(m[1]);
+    return [min, m[2] ? Number(m[2]) : min];
   }
 
   async function loadFoods() {
@@ -520,9 +547,14 @@
         const wheelAngle = ((pointerAngle - normRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
         const selectedIndex = Math.floor(wheelAngle / arc) % count;
 
-        resultEl.textContent = items[selectedIndex];
+        const picked = items[selectedIndex];
+        const price = priceOf(picked);
+        resultEl.innerHTML = price
+          ? `${picked}<span class="result-price">💰 ${price}</span>`
+          : picked;
+        resultEl.dataset.item = picked;
         resultEl.classList.add('pop');
-        recordResult(meal, items[selectedIndex]);
+        recordResult(meal, picked);
         checkAllDone();
       }
     }
@@ -548,14 +580,24 @@
     const btn = document.getElementById('spinAllBtn');
     btn.disabled = false;
 
-    const b = document.getElementById('result-breakfast').textContent;
-    const l = document.getElementById('result-lunch').textContent;
-    const d = document.getElementById('result-dinner').textContent;
+    const b = document.getElementById('result-breakfast').dataset.item;
+    const l = document.getElementById('result-lunch').dataset.item;
+    const d = document.getElementById('result-dinner').dataset.item;
 
-    if (b !== '点击转盘试试' && l !== '点击转盘试试' && d !== '点击转盘试试'
-        && b !== '...' && l !== '...' && d !== '...') {
+    if (b && l && d) {
+      const withPrice = (item) => {
+        const price = priceOf(item);
+        return price ? `<strong>${item}</strong> <small>${price}</small>` : `<strong>${item}</strong>`;
+      };
+      let totalLine = '';
+      const ranges = [b, l, d].map(priceRange);
+      if (ranges.every(Boolean)) {
+        const min = ranges.reduce((s, r) => s + r[0], 0);
+        const max = ranges.reduce((s, r) => s + r[1], 0);
+        totalLine = `<br>💰 今日预计花费：<strong>${min === max ? min : `${min}-${max}`} 元</strong>`;
+      }
       const finalEl = document.getElementById('finalResult');
-      finalEl.innerHTML = `🌅 早餐：<strong>${b}</strong> &nbsp;|&nbsp; ☀️ 午餐：<strong>${l}</strong> &nbsp;|&nbsp; 🌙 晚餐：<strong>${d}</strong>`;
+      finalEl.innerHTML = `🌅 早餐：${withPrice(b)} &nbsp;|&nbsp; ☀️ 午餐：${withPrice(l)} &nbsp;|&nbsp; 🌙 晚餐：${withPrice(d)}${totalLine}`;
       finalEl.classList.add('show');
     }
   }

@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "calendar-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8642"],
+      "port": 8642,
+      "autoPort": false
+    },
+    {
+      "name": "calendar-static-alt",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8643"],
+      "port": 8643,
+      "autoPort": false
+    },
+    {
+      "name": "calendar-static-alt2",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8644"],
+      "port": 8644,
+      "autoPort": false
+    }
+  ]
+}
