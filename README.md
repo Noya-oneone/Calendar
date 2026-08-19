@@ -9,8 +9,8 @@
 | 📅 日历（首页） | [index.html](index.html) | 月历视图 + 今日信息卡片（距周末/发薪/下一节日） |
 | 🎉 快乐倒计时 | [countdown.html](countdown.html) | 翻页时钟 + 9 个倒计时卡片（周末、发薪、生日、节日） |
 | ⏰ 时钟 | [clock.html](clock.html) | 全屏实时时钟，日期、星期、秒数进度条 |
-| 🍽 今天吃什么 | [food.html](food.html) | 三个随机转盘（早餐/午餐/晚餐），一键决定三餐 |
-| 📝 待办事项 | [todo.html](todo.html) | 添加/完成/删除待办，localStorage 持久化 |
+| 🍽 今天吃什么 | [food.html](food.html) | 三个随机转盘（早餐/午餐/晚餐），一键决定三餐；自动记录结果，近 3 天吃过的自动避开 |
+| 📝 待办事项 | [todo.html](todo.html) | 添加/完成/删除待办，可选关联日期（日历首页显示青色圆点，逾期红色高亮），localStorage 持久化 |
 
 ## 项目结构
 
@@ -50,7 +50,8 @@ open index.html
 - CSS Grid 响应式布局
 - backdrop-filter 毛玻璃效果
 - Canvas 2D 转盘绘制与动画
-- localStorage 数据持久化（待办事项）
+- localStorage 数据持久化（待办事项、食物转盘历史）
+- 深色模式（跟随系统 `prefers-color-scheme`）
 - 动态 SVG favicon（每天自动更新日期）
 - 倒计时事件数据驱动（`js/countdown.js` 中的 `COUNTDOWN_EVENTS` 数组）
 

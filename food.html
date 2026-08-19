@@ -185,6 +185,34 @@
     opacity: 1;
   }
 
+  /* History panel */
+  .history-panel {
+    margin-top: 14px;
+    padding: 12px 24px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.9;
+    max-width: 90%;
+  }
+
+  .history-panel .history-title {
+    font-weight: 700;
+    opacity: 0.85;
+  }
+
+  .history-panel .history-note {
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(135deg, #3d2317, #4a3524, #33301f); }
+  }
+
   @media (max-width: 700px) {
     .wheels { flex-direction: column; align-items: center; }
     .wheel-card { max-width: 320px; }
@@ -232,6 +260,7 @@
 
 <button class="spin-all-btn" id="spinAllBtn" onclick="spinAll()">一键决定今天三餐!</button>
 <div class="final-result" id="finalResult"></div>
+<div class="history-panel" id="historyPanel" hidden></div>
 
 <script src="js/dock.js"></script>
 <script>
@@ -302,6 +331,65 @@
   function getColors(meal, count) {
     const pool = COLOR_POOLS[meal];
     return Array.from({ length: count }, (_, i) => pool[i % pool.length]);
+  }
+
+  // ===== History: record results, avoid repeats within AVOID_DAYS =====
+  const HISTORY_KEY = 'calendar_food_history';
+  const AVOID_DAYS = 3;
+  const MEAL_NAMES = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' };
+
+  function dateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function loadHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || {}; }
+    catch { return {}; }
+  }
+
+  function recordResult(meal, item) {
+    const history = loadHistory();
+    const today = dateStr(new Date());
+    history[today] = history[today] || {};
+    history[today][meal] = item;
+    // Keep only the last 7 days
+    const dates = Object.keys(history).sort();
+    while (dates.length > 7) delete history[dates.shift()];
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    renderHistory();
+  }
+
+  // Items eaten in the past AVOID_DAYS days (today excluded, so re-spins today aren't blocked)
+  function recentItems(meal) {
+    const history = loadHistory();
+    const avoid = new Set();
+    const now = new Date();
+    for (let i = 1; i <= AVOID_DAYS; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const entry = history[dateStr(d)];
+      if (entry && entry[meal]) avoid.add(entry[meal]);
+    }
+    return avoid;
+  }
+
+  function renderHistory() {
+    const panel = document.getElementById('historyPanel');
+    const history = loadHistory();
+    const now = new Date();
+    const lines = [];
+    for (let i = 1; i <= AVOID_DAYS; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const entry = history[dateStr(d)];
+      if (!entry) continue;
+      const meals = ['breakfast', 'lunch', 'dinner']
+        .filter(m => entry[m])
+        .map(m => `${MEAL_NAMES[m]} ${entry[m]}`)
+        .join(' · ');
+      lines.push(`${d.getMonth() + 1}/${d.getDate()}　${meals}`);
+    }
+    if (lines.length === 0) { panel.hidden = true; return; }
+    panel.hidden = false;
+    panel.innerHTML = `<div class="history-title">📋 最近吃过</div>${lines.join('<br>')}<br><span class="history-note">近 ${AVOID_DAYS} 天吃过的，转盘会自动避开</span>`;
   }
 
   // ===== Wheel state =====
@@ -384,9 +472,29 @@
     const count = items.length;
     const arc = (Math.PI * 2) / count;
 
-    // Spin 5-8 full turns + random extra angle
-    const totalRotation = (5 + Math.random() * 3) * Math.PI * 2 + Math.random() * Math.PI * 2;
     const startRotation = w.rotation;
+
+    // Avoid items eaten in the past few days: aim the spin at an allowed slice.
+    // Only applies when enough alternatives remain, so a tiny list still works.
+    const avoid = recentItems(meal);
+    const allowedIndices = items
+      .map((item, i) => (avoid.has(item) ? -1 : i))
+      .filter(i => i >= 0);
+
+    let totalRotation;
+    if (avoid.size > 0 && allowedIndices.length >= 2) {
+      const targetIndex = allowedIndices[Math.floor(Math.random() * allowedIndices.length)];
+      // Land the pointer (top = 3PI/2) inside the target slice, away from its edges
+      const pointerAngle = 3 * Math.PI / 2;
+      const desiredWheelAngle = targetIndex * arc + arc * (0.15 + Math.random() * 0.7);
+      const desiredRotation = ((pointerAngle - desiredWheelAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      const startNorm = ((startRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const delta = ((desiredRotation - startNorm) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      totalRotation = (5 + Math.floor(Math.random() * 3)) * Math.PI * 2 + delta;
+    } else {
+      // Spin 5-8 full turns + random extra angle
+      totalRotation = (5 + Math.random() * 3) * Math.PI * 2 + Math.random() * Math.PI * 2;
+    }
     const duration = 3000 + Math.random() * 1500;
     const startTime = performance.now();
 
@@ -414,6 +522,7 @@
 
         resultEl.textContent = items[selectedIndex];
         resultEl.classList.add('pop');
+        recordResult(meal, items[selectedIndex]);
         checkAllDone();
       }
     }
@@ -457,6 +566,7 @@
     initWheel('breakfast');
     initWheel('lunch');
     initWheel('dinner');
+    renderHistory();
     renderDock('food');
   })();
 </script>

@@ -37,6 +37,13 @@
     outline: none;
   }
 
+  .input-row input[type="date"] {
+    flex: 0 0 auto;
+    width: 150px;
+    font-family: inherit;
+    color: #555;
+  }
+
   .input-row button {
     padding: 12px 24px;
     border: none;
@@ -74,6 +81,23 @@
 
   .todo-text { flex: 1; font-size: 1.05rem; }
 
+  .todo-date {
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.25);
+    padding: 3px 9px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  .todo-date.overdue {
+    background: rgba(180,20,40,0.6);
+    font-weight: 700;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: linear-gradient(135deg, #4a2040, #5c2333); }
+  }
+
   .todo-delete {
     background: none;
     border: none;
@@ -101,6 +125,7 @@
 <div class="todo-app">
   <div class="input-row">
     <input type="text" id="todoInput" placeholder="添加新的待办..." onkeydown="if(event.key==='Enter') addTodo()">
+    <input type="date" id="todoDate" title="可选：关联日期，日历首页会显示圆点">
     <button onclick="addTodo()">添加</button>
   </div>
   <ul class="todo-list" id="todoList"></ul>
@@ -128,6 +153,7 @@
       <li class="todo-item ${t.done ? 'done' : ''}">
         <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${i})">
         <span class="todo-text">${escapeHtml(t.text)}</span>
+        ${t.date ? `<span class="todo-date ${isOverdue(t) ? 'overdue' : ''}">${formatDate(t.date)}</span>` : ''}
         <button class="todo-delete" onclick="deleteTodo(${i})">✕</button>
       </li>
     `).join("");
@@ -138,12 +164,27 @@
       : "暂无待办";
   }
 
+  function formatDate(dateStr) {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const today = new Date();
+    if (y === today.getFullYear() && m === today.getMonth() + 1 && d === today.getDate()) return "今天";
+    return `${m}/${d}`;
+  }
+
+  function isOverdue(t) {
+    if (t.done || !t.date) return false;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+    return t.date < todayStr;
+  }
+
   function addTodo() {
     const input = document.getElementById("todoInput");
     const text = input.value.trim();
     if (!text) return;
+    const date = document.getElementById("todoDate").value || null;
     const todos = loadTodos();
-    todos.push({ text, done: false });
+    todos.push({ text, done: false, date });
     saveTodos(todos);
     input.value = "";
     render();

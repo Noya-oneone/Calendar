@@ -153,6 +153,30 @@
     background: #fff;
   }
 
+  .cal-day.has-todo::before {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    background: #4ecdc4;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Both dots on the same day: place them side by side */
+  .cal-day.has-event.has-todo::after {
+    left: calc(50% - 7px);
+    transform: none;
+  }
+
+  .cal-day.has-event.has-todo::before {
+    left: calc(50% + 2px);
+    transform: none;
+  }
+
   .cal-day.other-month {
     opacity: 0.25;
   }
@@ -235,7 +259,7 @@
     <button id="next">&#9654;</button>
   </div>
   <div class="cal-grid" id="calGrid"></div>
-  <div class="legend">红点 = 重要日期（生日 / 节日 / 发薪日）</div>
+  <div class="legend">红点 = 重要日期（生日 / 节日 / 发薪日）　青点 = 待办事项</div>
 </div>
 
 <div class="today-info">
@@ -291,6 +315,23 @@
     return days;
   }
 
+  // Days in this month that have undone todos (from todo.html's localStorage)
+  function getTodoDays(year, month) {
+    const map = new Map(); // day -> [todo texts]
+    let todos = [];
+    try { todos = JSON.parse(localStorage.getItem("calendar_todos")) || []; }
+    catch { /* ignore */ }
+    todos.forEach(t => {
+      if (t.done || !t.date) return;
+      const [y, m, d] = t.date.split("-").map(Number);
+      if (y === year && m === month + 1) {
+        if (!map.has(d)) map.set(d, []);
+        map.get(d).push(t.text);
+      }
+    });
+    return map;
+  }
+
   function renderCalendar(year, month) {
     currentYear = year;
     currentMonth = month;
@@ -307,6 +348,7 @@
     const prevDays = new Date(year, month, 0).getDate();
     const today = new Date();
     const eventDays = getEventDays(year, month);
+    const todoDays = getTodoDays(year, month);
 
     // Previous month trailing days
     for (let i = firstDay - 1; i >= 0; i--) {
@@ -323,7 +365,10 @@
       if (isToday) classes.push("today");
       if (hasEvent) classes.push("has-event");
       if (isWeekend) classes.push("weekend");
-      html += `<div class="${classes.join(" ")}">${d}</div>`;
+      const todos = todoDays.get(d);
+      if (todos) classes.push("has-todo");
+      const title = todos ? ` title="待办：${todos.join("、").replace(/"/g, "&quot;")}"` : "";
+      html += `<div class="${classes.join(" ")}"${title}>${d}</div>`;
     }
 
     // Next month leading days
